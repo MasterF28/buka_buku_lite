@@ -2,72 +2,73 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login Admin - BUKA BUKU</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            min-height: 100vh;
-            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif;
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 16px;
         }
         .login-shell {
-            width: 100%;
-            max-width: 1100px;
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 40px;
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
+            width: 100%; max-width: 1100px;
+            display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 0;
+            background: white; border-radius: 24px; overflow: hidden;
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
         }
         .login-sidebar {
-            background: #0f172a;
-            color: white;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            background: #0f172a; color: white; padding: 40px;
+            display: flex; flex-direction: column; justify-content: space-between;
         }
-        .login-sidebar h2 { font-size: 28px; margin-bottom: 24px; }
-        .login-sidebar p { color: #cbd5e1; line-height: 1.8; margin-bottom: 30px; }
-        .sidebar-links { list-style: none; display: grid; gap: 14px; }
-        .sidebar-links li { font-size: 15px; color: #cbd5e1; }
+        .login-sidebar h2 { font-size: 26px; margin-bottom: 16px; }
+        .login-sidebar p { color: #cbd5e1; line-height: 1.7; margin-bottom: 24px; font-size: 15px; }
+        .sidebar-links { list-style: none; display: grid; gap: 12px; }
+        .sidebar-links li { font-size: 14px; color: #cbd5e1; }
         .sidebar-links li::before { content: '•'; color: #f97316; margin-right: 10px; }
-        .login-card { padding: 40px; }
-        .login-card h1 { font-size: 32px; color: #0f172a; margin-bottom: 10px; }
-        .login-card p { color: #475569; margin-bottom: 30px; }
-        .field { margin-bottom: 20px; }
-        .field label { display: block; margin-bottom: 8px; font-weight: 600; color: #334155; }
+        .login-card { padding: 40px; display: flex; flex-direction: column; justify-content: center; }
+        .login-card h1 { font-size: 28px; color: #0f172a; margin-bottom: 8px; }
+        .login-card > p { color: #475569; margin-bottom: 28px; font-size: 14px; }
+        .field { margin-bottom: 18px; }
+        .field label { display: block; margin-bottom: 6px; font-weight: 600; color: #334155; font-size: 14px; }
         .field input {
-            width: 100%; border: 1px solid #cbd5e1; border-radius: 14px;
-            padding: 16px; font-size: 16px; color: #0f172a; outline: none;
-            transition: border-color 0.2s ease;
+            width: 100%; border: 1px solid #cbd5e1; border-radius: 12px;
+            padding: 14px 16px; font-size: 16px; color: #0f172a; outline: none;
+            transition: border-color .2s; min-height: 48px;
         }
         .field input:focus { border-color: #f97316; }
         .btn-submit {
-            width: 100%; border: none; border-radius: 14px; padding: 16px;
+            width: 100%; border: none; border-radius: 12px; padding: 14px;
             background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
             color: white; font-size: 16px; font-weight: 700; cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: transform .2s, box-shadow .2s; min-height: 48px;
         }
-        .btn-submit:hover { transform: translateY(-2px); }
-        .message { margin-top: 18px; font-size: 14px; color: #ef4444; }
-        .hint { margin-top: 12px; font-size: 13px; color: #64748b; }
-        .user-link {
-            margin-top: 20px; text-align: center;
-        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(249, 115, 22, .3); }
+        .btn-submit:active { transform: translateY(0); }
+        .message { margin-top: 14px; font-size: 13px; color: #ef4444; }
+        .user-link { margin-top: 18px; text-align: center; }
         .user-link a {
             color: #f97316; text-decoration: none; font-weight: 600; font-size: 14px;
         }
         .user-link a:hover { text-decoration: underline; }
+
         @media (max-width: 960px) {
-            .login-shell { grid-template-columns: 1fr; }
+            .login-shell { grid-template-columns: 1fr; max-width: 480px; }
+            .login-sidebar { padding: 32px 28px; }
+            .login-sidebar h2 { font-size: 22px; }
+            .login-card { padding: 32px 28px; }
+            .login-card h1 { font-size: 24px; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            .login-shell { border-radius: 16px; }
+            .login-sidebar { padding: 24px 20px; }
+            .login-sidebar h2 { font-size: 20px; }
+            .login-sidebar p { font-size: 14px; }
+            .login-card { padding: 24px 20px; }
+            .login-card h1 { font-size: 22px; }
+            .field input { padding: 12px 14px; font-size: 16px; }
         }
     </style>
 </head>
