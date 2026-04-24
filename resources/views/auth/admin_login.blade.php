@@ -79,12 +79,12 @@
                 <h2>ADMIN PANEL</h2>
                 <p>Login sebagai admin untuk mengelola buku, memantau peminjaman, dan mendaftarkan user baru.</p>
             </div>
-            <ul class="sidebar-links">
+            <!-- <ul class="sidebar-links">
                 <li>Kelola data buku</li>
                 <li>Pantau peminjaman & denda</li>
                 <li>Daftarkan user baru</li>
                 <li>Lihat statistik perpustakaan</li>
-            </ul>
+            </ul> -->
         </div>
 
         <div class="login-card">
