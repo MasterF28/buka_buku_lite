@@ -302,8 +302,6 @@
             <ul class="sidebar-menu">
                 <li><a href="/books" class="active">🏠 Beranda</a></li>
                 <li><a href="#riwayat">📋 Riwayat Peminjaman</a></li>
-                <li><a href="#favorit">❤️ Buku Favorit</a></li>
-                <li><a href="#notifikasi">🔔 Notifikasi</a></li>
             </ul>
         </div>
 
