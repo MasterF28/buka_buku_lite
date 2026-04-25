@@ -80,12 +80,12 @@
                 <h2>BUKA BUKU APPS</h2>
                 <p>Masuk dengan NPM dan password kamu untuk mulai memilih buku dan mengajukan peminjaman.</p>
             </div>
-            <!-- <ul class="sidebar-links">
+            <ul class="sidebar-links">
                 <li>Rekomendasi buku populer</li>
                 <li>Proses peminjaman cepat</li>
                 <li>Ambil buku di kasir</li>
                 <li>Konfirmasi tanpa ribet</li>
-            </ul> -->
+            </ul>
         </div>
 
         <div class="login-card">
