@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -27,6 +28,10 @@ Route::middleware(['auth.session', 'check.role:mahasiswa'])->group(function () {
     Route::get('/borrow/duration', [TransactionController::class, 'showDuration'])->name('borrow.duration');
     Route::post('/borrow/confirm', [TransactionController::class, 'confirmBorrow'])->name('borrow.confirm');
     Route::post('/borrow/{transaction}/return', [TransactionController::class, 'returnBook'])->name('borrow.return');
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 });
 
 // ===================== ADMIN ROUTES (Admin Only) =====================

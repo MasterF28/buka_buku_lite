@@ -13,6 +13,7 @@
             width: 260px; background: #fff; border-right: 1px solid #eee;
             position: fixed; left: 0; top: 0; height: 100vh; overflow-y: auto;
             padding: 20px; z-index: 1000; transition: transform .3s ease;
+            display: flex; flex-direction: column;
         }
         .sidebar-logo {
             display: flex; align-items: center; gap: 10px;
@@ -26,6 +27,17 @@
             border-radius: 8px; transition: .2s; font-size: 14px; min-height: 44px;
         }
         .sidebar-menu a:hover, .sidebar-menu a.active { background: #f0f0f0; color: #e63946; font-weight: 600; }
+        .sidebar-footer {
+            margin-top: auto; padding-top: 16px; border-top: 1px solid #eee;
+        }
+        .sidebar-logout {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; background: transparent; border: none;
+            color: #666; padding: 12px 10px; border-radius: 8px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: .2s; min-height: 44px; font-family: inherit;
+        }
+        .sidebar-logout:hover { background: #fef2f2; color: #e63946; }
 
         /* ========== OVERLAY ========== */
         .sidebar-overlay {
@@ -52,10 +64,53 @@
         }
         .topbar-title { font-weight: 700; font-size: 16px; color: #e63946; }
         .topbar-actions { display: flex; align-items: center; gap: 8px; }
+        .profile-dropdown-wrapper {
+            position: relative;
+        }
         .topbar-avatar {
             width: 34px; height: 34px; border-radius: 50%; background: #e63946;
             color: white; display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 14px;
+            font-weight: bold; font-size: 14px; cursor: pointer; position: relative;
+            overflow: hidden;
+        }
+        .topbar-avatar img {
+            width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0;
+        }
+        .desktop-profile {
+            display: none; position: fixed; top: 24px; right: 30px;
+            z-index: 998;
+        }
+        .desktop-avatar {
+            width: 40px; height: 40px; border-radius: 50%; background: #e63946;
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 15px; cursor: pointer; position: relative;
+            overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+        .desktop-avatar img {
+            width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0;
+        }
+        .profile-dropdown {
+            display: none; position: absolute; top: 44px; right: 0;
+            background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+            min-width: 180px; padding: 8px 0; z-index: 1001;
+        }
+        .profile-dropdown.show { display: block; }
+        .profile-dropdown-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 16px; color: #333; text-decoration: none;
+            font-size: 14px; transition: .2s;
+        }
+        .profile-dropdown-item:hover { background: #f5f5f5; }
+        .profile-dropdown-item.logout {
+            color: #e63946; font-weight: 600;
+        }
+        .profile-dropdown-item.logout:hover { background: #fef2f2; }
+        .profile-dropdown-divider {
+            height: 1px; background: #eee; margin: 6px 0;
+        }
+        .profile-name-display {
+            font-size: 13px; font-weight: 600; color: #333;
+            padding: 8px 16px 4px; white-space: nowrap;
         }
         .topbar-logout {
             background: #e63946; color: white; border: none; padding: 6px 12px;
@@ -206,6 +261,9 @@
             .history-grid { grid-template-columns: 1fr; }
             .history-card { gap: 12px; padding: 14px; }
         }
+        @media (min-width: 769px) {
+            .desktop-profile { display: block; }
+        }
         @media (max-width: 360px) {
             .books-grid { grid-template-columns: 1fr; }
         }
@@ -213,6 +271,11 @@
     @stack('styles')
 </head>
 <body>
+    @php
+        $currentUser = \App\Models\User::find(Session::get('user_id'));
+        $hasPhoto = $currentUser && $currentUser->photo && file_exists(public_path('storage/' . $currentUser->photo));
+    @endphp
+
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <div class="topbar">
@@ -221,11 +284,47 @@
         </button>
         <div class="topbar-title">📚 BUKA BUKU</div>
         <div class="topbar-actions">
-            <div class="topbar-avatar">{{ substr(session('nim','?'), 0, 1) }}</div>
-            <form action="{{ route('logout') }}" method="POST" style="margin:0;">
-                @csrf
-                <button type="submit" class="topbar-logout">Logout</button>
-            </form>
+            <div class="profile-dropdown-wrapper">
+                <div class="topbar-avatar" onclick="toggleProfileDropdown(event)">
+                    @if($hasPhoto)
+                        <img src="{{ asset('storage/' . $currentUser->photo) }}" alt="Foto Profil">
+                    @else
+                        {{ strtoupper(substr(session('name','?'), 0, 1)) }}
+                    @endif
+                </div>
+                <div class="profile-dropdown" id="profileDropdown" onclick="event.stopPropagation()">
+                    <div class="profile-name-display">{{ session('name', 'User') }}</div>
+                    <div class="profile-dropdown-divider"></div>
+                    <a href="{{ route('profile.show') }}" class="profile-dropdown-item">👤 Profil Saya</a>
+                    <div class="profile-dropdown-divider"></div>
+                    <form action="{{ route('logout') }}" method="POST" style="margin:0;">
+                        @csrf
+                        <button type="submit" class="profile-dropdown-item logout" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;font-family:inherit;">🚪 Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="desktop-profile">
+        <div class="profile-dropdown-wrapper">
+            <div class="desktop-avatar" onclick="toggleProfileDropdownDesktop(event)">
+                @if($hasPhoto)
+                    <img src="{{ asset('storage/' . $currentUser->photo) }}" alt="Foto Profil">
+                @else
+                    {{ strtoupper(substr(session('name','?'), 0, 1)) }}
+                @endif
+            </div>
+            <div class="profile-dropdown" id="profileDropdownDesktop" onclick="event.stopPropagation()">
+                <div class="profile-name-display">{{ session('name', 'User') }}</div>
+                <div class="profile-dropdown-divider"></div>
+                <a href="{{ route('profile.show') }}" class="profile-dropdown-item">👤 Profil Saya</a>
+                <div class="profile-dropdown-divider"></div>
+                <form action="{{ route('logout') }}" method="POST" style="margin:0;">
+                    @csrf
+                    <button type="submit" class="profile-dropdown-item logout" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;font-family:inherit;">🚪 Logout</button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -237,7 +336,14 @@
             @endphp
             <li><a href="/books" class="{{ $path == 'books' ? 'active' : '' }}">🏠 Beranda</a></li>
             <li><a href="#riwayat" class="{{ str_contains($path, 'riwayat') ? 'active' : '' }}">📋 Riwayat Peminjaman</a></li>
+            <li><a href="{{ route('profile.show') }}" class="{{ $path == 'profile' ? 'active' : '' }}">👤 Profil Saya</a></li>
         </ul>
+        <div class="sidebar-footer">
+            <form action="{{ route('logout') }}" method="POST" style="margin:0;">
+                @csrf
+                <button type="submit" class="sidebar-logout">🚪 Logout</button>
+            </form>
+        </div>
     </aside>
 
     <main class="main-content">
@@ -249,6 +355,18 @@
             document.getElementById('userSidebar').classList.toggle('open');
             document.getElementById('sidebarOverlay').classList.toggle('show');
         }
+        function toggleProfileDropdown(e) {
+            e.stopPropagation();
+            document.getElementById('profileDropdown').classList.toggle('show');
+        }
+        function toggleProfileDropdownDesktop(e) {
+            e.stopPropagation();
+            document.getElementById('profileDropdownDesktop').classList.toggle('show');
+        }
+        document.addEventListener('click', function() {
+            document.getElementById('profileDropdown').classList.remove('show');
+            document.getElementById('profileDropdownDesktop').classList.remove('show');
+        });
         document.querySelectorAll('.sidebar-menu a').forEach(a => {
             a.addEventListener('click', () => {
                 if (window.innerWidth <= 768) toggleSidebar();

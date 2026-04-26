@@ -5,16 +5,6 @@
 @section('content')
 <div class="page-header">
     <h1>Rekomendasi Buku</h1>
-    <div class="user-info" style="display:flex;align-items:center;gap:12px;">
-        <div class="user-avatar">{{ substr(session('nim'), 0, 1) }}</div>
-        <div>
-            <p style="font-size:14px;color:#666;">{{ session('nim') }}</p>
-        </div>
-        <form action="{{ route('logout') }}" method="POST" style="margin:0;">
-            @csrf
-            <button type="submit" class="logout-btn">Logout</button>
-        </form>
-    </div>
 </div>
 
 <div class="filter-section">
