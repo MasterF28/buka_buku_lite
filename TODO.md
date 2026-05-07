@@ -1,13 +1,39 @@
-# TODO - Profile Tab Improvement
+# TODO Membership Digital Library (buka_buku_lite)
 
-- [x] 1. Buat migration `add_photo_to_users_table.php` untuk kolom `photo`
-- [x] 2. Edit `app/Models/User.php` - tambahkan `photo` ke `$fillable`
-- [x] 3. Buat `app/Http/Controllers/ProfileController.php` dengan method `show()` dan `update()`
-- [x] 4. Edit `routes/web.php` - tambahkan route `/profile` dan `/profile/update`
-- [x] 5. Buat view `resources/views/profile/show.blade.php`
-- [x] 6. Edit `resources/views/layouts/user.blade.php` - ubah avatar topbar ke nama, tambahkan dropdown menu profil
-- [x] 7. Jalankan migration
-- [x] 8. Test
+## Database
+- [ ] Tambahkan migration: add_membership_fields_to_users
+- [ ] Tambahkan migration: add_pdf_file_to_books
 
+## Backend Logic
+- [ ] Update model User & Book (fillable + helper method membership status)
+- [ ] Tambahkan controller untuk PDF reader: akses kontrol halaman (standar max 5)
+- [ ] Implement auto-expired saat akses reader (dan/atau saat login)
 
+## Routes
+- [ ] Tambahkan route user: GET /books/{book}/read (PDF reader)
+- [ ] Tambahkan route admin: GET /admin/memberships
+- [ ] Tambahkan route admin: POST /admin/memberships/{user}/set-premium
+- [ ] Tambahkan route admin: POST /admin/memberships/{user}/set-standar
+
+## Admin Upload PDF
+- [ ] Update AdminController: storeBook + updateBook untuk upload pdf (mimes:pdf, max ~20MB)
+- [ ] Update views admin/books/create.blade.php & edit.blade.php untuk field upload pdf
+
+## Admin Membership Management
+- [ ] Buat view admin/memberships/index.blade.php
+- [ ] Buat UI tombol set premium (3/6/12 bulan) & set standar
+
+## PDF Reader (PDF.js)
+- [ ] Buat view books/read.blade.php memakai PDF.js render per-page
+- [ ] Untuk standar: izinkan render halaman 1–5, sisanya blur/termasuk placeholder + tombol Upgrade
+- [ ] Untuk premium: render semua halaman
+
+## User UI (Optional)
+- [ ] Update profile/show.blade.php menampilkan badge membership + paket + expired date + tombol hubungi admin
+
+## Testing
+- [ ] Migrate database
+- [ ] Test admin upload PDF
+- [ ] Test membership standar/premium di reader
+- [ ] Test auto-expired dengan set tanggal lampau
 

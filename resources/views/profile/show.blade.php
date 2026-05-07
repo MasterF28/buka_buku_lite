@@ -55,9 +55,36 @@
 </div>
 
 <div class="profile-card">
+    @php
+        $isPremiumActive = $user->membership_type === 'premium'
+            && $user->premium_expired_date
+            && \Carbon\Carbon::parse($user->premium_expired_date)->greaterThanOrEqualTo(now());
+    @endphp
+
+    <div class="success-msg" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">
+        <div style="font-weight:900;margin-bottom:6px;">Status Membership: {{ $isPremiumActive ? 'Premium Active' : 'Standar' }}</div>
+        @if($user->membership_type === 'premium')
+            <div style="font-size:13px;color:#1e3a8a;">Paket: {{ $user->premium_package ? $user->premium_package.' bulan' : '-' }}</div>
+            <div style="font-size:13px;color:#1e3a8a;">Expired: {{ $user->premium_expired_date ? \Carbon\Carbon::parse($user->premium_expired_date)->format('d M Y') : '-' }}</div>
+        @else
+            <div style="font-size:13px;color:#1e3a8a; font-weight:800; margin-top:8px;">Paket Premium tersedia:</div>
+            <div style="font-size:12.5px;color:#1e3a8a;margin-top:6px;line-height:1.6;">
+                3 bulan → Rp15.000<br>
+                6 bulan → Rp25.000<br>
+                12 bulan → Rp50.000
+            </div>
+            <div style="margin-top:12px;">
+                <a href="/admin/memberships" class="btn-save" style="display:inline-flex;align-items:center;justify-content:center;">
+                    Hubungi Admin Perpustakaan
+                </a>
+            </div>
+        @endif
+    </div>
+
     @if(session('success'))
         <div class="success-msg">{{ session('success') }}</div>
     @endif
+
 
     @if(session('error'))
         <div class="error-msg">{{ session('error') }}</div>

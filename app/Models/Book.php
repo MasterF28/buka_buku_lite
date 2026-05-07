@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;use App\Models\Transaction;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Transaction;
+
 class Book extends Model
 {
-    protected $fillable = ['title', 'author', 'category_id', 'image_url', 'stock', 'description'];
+    protected $fillable = ['title', 'author', 'category_id', 'image_url', 'stock', 'description', 'pdf_file'];
 
     public function category(): BelongsTo
     {
@@ -19,3 +21,4 @@ class Book extends Model
         return $this->hasMany(Transaction::class);
     }
 }
+

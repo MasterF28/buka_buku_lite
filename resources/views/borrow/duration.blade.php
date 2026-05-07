@@ -221,6 +221,7 @@
 
     <script>
         function submitBorrow() {
+
             const durationDays = parseInt(document.querySelector('input[name="duration_days"]:checked').value, 10);
             document.getElementById('borrowForm').style.display = 'none';
             document.getElementById('loadingState').style.display = 'block';

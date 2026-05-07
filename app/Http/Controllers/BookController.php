@@ -36,6 +36,8 @@ class BookController extends Controller
         $book = Book::findOrFail($bookId);
 
         session()->put('selected_book_id', $book->id);
+        session()->put('selected_book_pdf_available', (bool) $book->pdf_file);
+
 
         return redirect('/borrow/duration');
     }

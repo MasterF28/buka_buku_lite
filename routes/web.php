@@ -24,6 +24,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth.session', 'check.role:mahasiswa'])->group(function () {
     Route::get('/books', [BookController::class, 'index'])->name('books.index');
     Route::post('/books/{book}/select', [BookController::class, 'selectBook'])->name('books.select');
+    Route::get('/books/{book}/read', [\App\Http\Controllers\BookReadController::class, 'read'])->name('books.read');
+
 
     Route::get('/borrow/duration', [TransactionController::class, 'showDuration'])->name('borrow.duration');
     Route::post('/borrow/confirm', [TransactionController::class, 'confirmBorrow'])->name('borrow.confirm');
@@ -37,6 +39,12 @@ Route::middleware(['auth.session', 'check.role:mahasiswa'])->group(function () {
 // ===================== ADMIN ROUTES (Admin Only) =====================
 Route::middleware(['auth.session', 'check.role:admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+    // Membership
+    Route::get('/memberships', [AdminController::class, 'memberships'])->name('admin.memberships');
+    Route::post('/memberships/{user}/set-premium', [AdminController::class, 'setPremium'])->name('admin.memberships.set-premium');
+    Route::post('/memberships/{user}/set-standar', [AdminController::class, 'setStandar'])->name('admin.memberships.set-standar');
+
 
     // Books CRUD
     Route::get('/books', [AdminController::class, 'books'])->name('admin.books');

@@ -16,6 +16,7 @@ class AdminController extends Controller
     // ===================== DASHBOARD =====================
     public function dashboard()
     {
+
         $totalBooks = Book::count();
         $totalUsers = User::where('role', 'mahasiswa')->count();
         $activeTransactions = Transaction::where('status', 'borrowed')->count();
@@ -48,16 +49,24 @@ class AdminController extends Controller
             'stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'pdf' => 'nullable|file|mimes:pdf|max:20480',
         ]);
 
         $data = $request->only(['title', 'author', 'category_id', 'stock', 'description']);
+
 
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('books', 'public');
             $data['image_url'] = Storage::url($imagePath);
         }
 
+        if ($request->hasFile('pdf')) {
+            $pdfPath = $request->file('pdf')->store('books_pdfs', 'public');
+            $data['pdf_file'] = $pdfPath;
+        }
+
         Book::create($data);
+
 
         return redirect('/admin/books')->with('success', 'Buku berhasil ditambahkan.');
     }
@@ -78,7 +87,9 @@ class AdminController extends Controller
             'stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'pdf' => 'nullable|file|mimes:pdf|max:20480',
         ]);
+
 
         $book = Book::findOrFail($id);
         $data = $request->only(['title', 'author', 'category_id', 'stock', 'description']);
@@ -92,7 +103,16 @@ class AdminController extends Controller
             $data['image_url'] = Storage::url($imagePath);
         }
 
+        if ($request->hasFile('pdf')) {
+            if ($book->pdf_file) {
+                Storage::disk('public')->delete($book->pdf_file);
+            }
+            $pdfPath = $request->file('pdf')->store('books_pdfs', 'public');
+            $data['pdf_file'] = $pdfPath;
+        }
+
         $book->update($data);
+
 
         return redirect('/admin/books')->with('success', 'Buku berhasil diperbarui.');
     }
@@ -149,5 +169,54 @@ class AdminController extends Controller
 
         return redirect('/admin/users/create')->with('success', 'User berhasil didaftarkan.');
     }
+
+    // ===================== MEMBERSHIP MANAGEMENT =====================
+    public function memberships()
+    {
+        $users = User::where('role', 'mahasiswa')->orderBy('name')->get();
+        $premiumLabel = [
+            3 => '3 bulan - Rp15.000',
+            6 => '6 bulan - Rp25.000',
+            12 => '12 bulan - Rp50.000',
+        ];
+
+        return view('admin.memberships.index', compact('users', 'premiumLabel'));
+    }
+
+    public function setPremium(Request $request, $userId)
+    {
+        $request->validate([
+            'premium_package' => 'required|in:3,6,12',
+        ]);
+
+        $months = (int) $request->premium_package;
+        $start = Carbon::now();
+        $expired = $start->copy()->addMonths($months);
+
+        $user = User::findOrFail($userId);
+        $user->update([
+            'membership_type' => 'premium',
+            'premium_package' => $months,
+            'premium_start_date' => $start,
+            'premium_expired_date' => $expired,
+        ]);
+
+        return redirect('/admin/memberships')->with('success', 'Membership berhasil diubah menjadi Premium.');
+    }
+
+    public function setStandar($userId)
+    {
+        $user = User::findOrFail($userId);
+
+        $user->update([
+            'membership_type' => 'standar',
+            'premium_package' => null,
+            'premium_start_date' => null,
+            'premium_expired_date' => null,
+        ]);
+
+        return redirect('/admin/memberships')->with('success', 'Membership berhasil dikembalikan menjadi Standar.');
+    }
 }
+
 

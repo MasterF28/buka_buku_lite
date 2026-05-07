@@ -190,6 +190,7 @@
                 $route = Route::currentRouteName();
             @endphp
             <li><a href="{{ route('admin.dashboard') }}" class="{{ $route == 'admin.dashboard' ? 'active' : '' }}">🏠 Dashboard</a></li>
+            <li><a href="{{ route('admin.memberships') }}" class="{{ $route == 'admin.memberships' ? 'active' : '' }}"> Memberships</a></li>
             <li><a href="{{ route('admin.books') }}" class="{{ in_array($route, ['admin.books','admin.books.create','admin.books.edit']) ? 'active' : '' }}">📚 Kelola Buku</a></li>
             <li><a href="{{ route('admin.transactions') }}" class="{{ $route == 'admin.transactions' ? 'active' : '' }}">📋 Peminjaman</a></li>
             <li><a href="{{ route('admin.users.create') }}" class="{{ in_array($route, ['admin.users.create','admin.users.store']) ? 'active' : '' }}">👤 Daftar User</a></li>

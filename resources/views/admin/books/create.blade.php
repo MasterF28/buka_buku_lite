@@ -45,6 +45,13 @@
             <input type="file" name="image" accept="image/*" style="padding:8px 0;border:none;">
             @error('image')<div class="error">{{ $message }}</div>@enderror
         </div>
+
+        <div class="field">
+            <label>PDF Buku</label>
+            <input type="file" name="pdf" accept="application/pdf" style="padding:8px 0;border:none;">
+            <small style="color:#64748b;font-size:13px;">Opsional. Maks 20MB.</small>
+            @error('pdf')<div class="error">{{ $message }}</div>@enderror
+        </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
             <a href="{{ route('admin.books') }}" class="btn btn-back">Kembali</a>
             <button type="submit" class="btn btn-submit">Simpan Buku</button>

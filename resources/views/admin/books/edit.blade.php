@@ -50,6 +50,22 @@
             <small style="color:#64748b;font-size:13px;">Kosongkan jika tidak ingin mengubah gambar.</small>
             @error('image')<div class="error">{{ $message }}</div>@enderror
         </div>
+
+        <div class="field">
+            <label>PDF Buku</label>
+            @if($book->pdf_file)
+                <div style="font-size:13px;color:#16a34a;font-weight:800;margin-bottom:8px;">PDF tersedia ✅</div>
+                <small style="color:#64748b;font-size:12px;display:block;margin-top:-4px;">File saat ini: {{ basename($book->pdf_file) }}</small>
+            @else
+                <div style="font-size:13px;color:#dc2626;font-weight:800;margin-bottom:8px;">PDF belum tersedia</div>
+            @endif
+
+            <input type="file" name="pdf" accept="application/pdf" style="margin-top:10px;padding:8px 0;border:none;">
+            <small style="color:#64748b;font-size:13px;">Kosongkan jika tidak ingin mengubah PDF.</small>
+            @error('pdf')<div class="error">{{ $message }}</div>@enderror
+        </div>
+
+
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
             <a href="{{ route('admin.books') }}" class="btn btn-back">Kembali</a>
             <button type="submit" class="btn btn-submit" style="background:#3b82f6;">Update Buku</button>

@@ -28,6 +28,10 @@ class User extends Authenticatable
         'role',
         'password',
         'email',
+        'membership_type',
+        'premium_package',
+        'premium_start_date',
+        'premium_expired_date',
     ];
 
     /**
@@ -48,6 +52,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'premium_start_date' => 'datetime',
+        'premium_expired_date' => 'datetime',
     ];
 
     public function transactions(): HasMany
