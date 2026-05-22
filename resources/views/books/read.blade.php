@@ -40,6 +40,32 @@
         .lock-pill { background: rgba(229,57,70,.95); color:white; padding: 10px 14px; border-radius: 999px; font-size: 13px; font-weight: 900; }
         .hint { background: rgba(255,255,255,.92); color:#111827; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; }
 
+        .quick-jump { margin-top: 14px; background: white; border-radius: 14px; padding: 12px 14px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+        .quick-jump-title { font-size: 12px; font-weight: 900; color:#111827; margin-bottom: 10px; letter-spacing: .2px; }
+        .quick-jump-grid { display:flex; flex-wrap:wrap; gap:8px; }
+        .qj-btn {
+            width: 44px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            color: #111827;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform .05s ease;
+        }
+        .qj-btn:hover { transform: translateY(-1px); }
+        .qj-btn.active {
+            background: #e63946;
+            border-color: #e63946;
+            color: #fff;
+        }
+
+        @media (max-width: 480px) {
+            .qj-btn { width: 40px; }
+        }
+
+
         @media (max-width: 480px) {
             .wrap { padding: 12px; }
             .top { padding: 12px 14px; }
@@ -47,7 +73,7 @@
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <div class="wrap">
@@ -74,11 +100,18 @@
             <div id="page-info">Halaman <span id="pageNum">1</span> / <span id="pageCount">-</span></div>
             <button id="nextBtn" class="btn btn-secondary" type="button">▶</button>
         </div>
+
+        <div class="quick-jump">
+            <div class="quick-jump-title">Quick Jump</div>
+            <div id="quickJumpContainer" class="quick-jump-grid" aria-label="Pilih halaman"></div>
+        </div>
+
         <div id="pdfViewer"></div>
     </div>
 </div>
 
         <script>
+
     const pdfUrl = @json($pdfUrl);
     // Pastikan URL mengarah ke public disk (pakai /storage prefix hasil Storage::url)
 
@@ -99,12 +132,33 @@ console.log('PDF URL:', url);
     const pageCountEl = document.getElementById('pageCount');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const quickJumpContainer = document.getElementById('quickJumpContainer');
 
     const state = { pdfDoc: null, pageNum: 1, pageCount: 0 };
+
 
     function canRenderPage(pageIndex1Based) {
         if (isPremiumActive) return true;
         return pageIndex1Based <= maxPage;
+    }
+
+    function setActiveQuickJump(pageNumber) {
+        if (!quickJumpContainer) return;
+        quickJumpContainer.querySelectorAll('.qj-btn').forEach(btn => {
+            btn.classList.toggle('active', Number(btn.dataset.page) === Number(pageNumber));
+        });
+    }
+
+    function updateQuickJumpLockState() {
+        if (!quickJumpContainer) return;
+        quickJumpContainer.querySelectorAll('.qj-btn').forEach(btn => {
+            const page = Number(btn.dataset.page);
+            const locked = !canRenderPage(page);
+            btn.disabled = locked;
+            btn.style.opacity = locked ? '0.55' : '1';
+            btn.style.cursor = locked ? 'not-allowed' : 'pointer';
+            btn.title = locked ? 'Halaman terkunci (Premium)' : '';
+        });
     }
 
     async function renderPage(pageNumber) {
@@ -112,6 +166,7 @@ console.log('PDF URL:', url);
         pageNumEl.textContent = pageNumber;
 
         const shouldLock = !canRenderPage(pageNumber);
+
         const wrap = document.createElement('div');
         wrap.className = 'page-wrap';
 
@@ -143,7 +198,14 @@ console.log('PDF URL:', url);
             wrap.appendChild(overlay);
             viewer.appendChild(wrap);
 
-            window.alert('Daftarkan akun Premium anda untuk menikmati seluruh isi buku');
+            Swal.fire({
+                title: 'Akses Terbatas',
+                text: 'Daftarkan akun Premium anda untuk menikmati seluruh isi buku',
+                icon: 'info',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#e63946',
+                allowOutsideClick: false
+            });
 
             prevBtn.disabled = pageNumber <= 1;
             nextBtn.disabled = pageNumber >= state.pageCount;
@@ -162,7 +224,11 @@ console.log('PDF URL:', url);
 
         prevBtn.disabled = pageNumber <= 1;
         nextBtn.disabled = pageNumber >= state.pageCount;
+
+        setActiveQuickJump(pageNumber);
+        updateQuickJumpLockState();
     }
+
 
     prevBtn.addEventListener('click', async () => {
         if (state.pageNum <= 1) return;
@@ -179,9 +245,42 @@ console.log('PDF URL:', url);
         await renderPage(state.pageNum);
     });
 
+    function buildQuickJumpButtons(pageCount) {
+        if (!quickJumpContainer) return;
+        quickJumpContainer.innerHTML = '';
+
+        const limit = isPremiumActive ? pageCount : Math.min(pageCount, maxPage);
+        const safeLimit = Math.max(0, limit);
+
+        for (let i = 1; i <= safeLimit; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'qj-btn';
+            btn.textContent = i;
+            btn.dataset.page = String(i);
+            btn.addEventListener('click', async () => {
+                // Guard: jangan render halaman terkunci
+                if (!canRenderPage(i)) return;
+                state.pageNum = i;
+                setActiveQuickJump(i);
+                await renderPage(i);
+
+                // Scroll ke atas agar user langsung melihat halaman terpilih
+                viewer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+
+            quickJumpContainer.appendChild(btn);
+        }
+
+        // Jika premium aktif, buat juga halaman yang melebihi limit? tidak perlu karena limit = pageCount.
+        setActiveQuickJump(state.pageNum);
+        updateQuickJumpLockState();
+    }
+
     (async function init() {
         try {
             const response = await fetch(url, { credentials: 'same-origin' });
+
             if (!response.ok) {
                 throw new Error(`Gagal memuat PDF: ${response.status}`);
             }
@@ -197,7 +296,10 @@ console.log('PDF URL:', url);
             state.pdfDoc = await loadingTask.promise;
             state.pageCount = state.pdfDoc.numPages;
             pageCountEl.textContent = state.pageCount;
+
+            buildQuickJumpButtons(state.pageCount);
             await renderPage(1);
+
         } catch (err) {
             console.error(err);
             viewer.innerHTML = '<div style="color:#dc2626;font-weight:900;">Gagal memuat PDF.</div>';

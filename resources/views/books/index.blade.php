@@ -34,12 +34,13 @@
                     <div class="book-title" title="{{ $book->title }}">{{ $book->title }}</div>
                     <div class="book-author" title="{{ $book->author }}">{{ $book->author }}</div>
                     <div class="book-stock">Stock: <strong>{{ $book->stock }}</strong></div>
-                        <form action="{{ route('books.read', $book->id) }}" method="GET" style="margin:0;">
+                        <form action="{{ route('books.select', $book->id) }}" method="POST" style="margin:0;">
+                            @csrf
+                            <button type="submit" class="select-btn" {{ $book->stock == 0 ? 'disabled' : '' }}>
+                                {{ $book->stock == 0 ? 'Habis' : 'Pilih Buku' }}
+                            </button>
+                        </form>
 
-                        <button type="submit" class="select-btn" {{ $book->stock == 0 ? 'disabled' : '' }}>
-                            {{ $book->stock == 0 ? 'Habis' : 'Pilih Buku' }}
-                        </button>
-                    </form>
 
                     @if(!$book->pdf_file)
                         <div style="margin-top:8px;font-size:12px;color:#dc2626;font-weight:800;">PDF belum tersedia</div>
@@ -109,6 +110,8 @@
 
 @push('scripts')
 <script>
+    // Submit form must be POST to trigger selectBook (pinjam flow)
+
     function filterByCategory() {
         const categoryId = document.getElementById('categoryFilter').value;
         document.querySelectorAll('.book-card').forEach(card => {
