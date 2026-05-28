@@ -245,8 +245,7 @@ console.log('PDF URL:', url);
         await renderPage(state.pageNum);
     });
 
-    // Quick Jump: ringkas dengan "..." yang bisa diklik untuk extend halaman selanjutnya.
-    // Contoh: 1,2,3,...,10  -> klik "..." jadi 1,2,3,4,5,6,7,8,9,10,20,...
+    // Quick Jump: chunk 15 halaman dengan navigasi << (mundur) dan >> (maju)
     function buildQuickJumpButtons(pageCount) {
         if (!quickJumpContainer) return;
         quickJumpContainer.innerHTML = '';
@@ -327,7 +326,33 @@ console.log('PDF URL:', url);
             quickJumpContainer.appendChild(createQuickButton(n));
         }
 
-        // tombol >> untuk chunk berikutnya
+        // tombol toolbar: << (chunk sebelumnya)
+        const hasPrevChunk = chunkStart > 1;
+        const prevBtnEl = document.createElement('button');
+        prevBtnEl.type = 'button';
+        prevBtnEl.className = 'qj-btn';
+        prevBtnEl.textContent = '<<';
+        prevBtnEl.style.width = '56px';
+        prevBtnEl.style.fontSize = '12px';
+
+        if (!hasPrevChunk) {
+            prevBtnEl.disabled = true;
+            prevBtnEl.style.opacity = '0.5';
+            prevBtnEl.style.cursor = 'default';
+        } else {
+            prevBtnEl.addEventListener('click', () => {
+                state.currentChunkStart = Math.max(1, chunkStart - chunkSize);
+                buildQuickJumpButtons(pageCount);
+            });
+        }
+
+        // render tombol halaman dalam chunk (<< dulu)
+        quickJumpContainer.appendChild(prevBtnEl);
+        for (let n = chunkStart; n <= chunkEnd; n++) {
+            quickJumpContainer.appendChild(createQuickButton(n));
+        }
+
+        // tombol toolbar: >> (chunk berikutnya)
         const hasNextChunk = chunkEnd < safeLimit;
         const nextBtnEl = document.createElement('button');
         nextBtnEl.type = 'button';
