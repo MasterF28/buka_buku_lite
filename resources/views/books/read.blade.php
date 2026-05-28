@@ -245,6 +245,8 @@ console.log('PDF URL:', url);
         await renderPage(state.pageNum);
     });
 
+    // Quick Jump: ringkas dengan "..." yang bisa diklik untuk extend halaman selanjutnya.
+    // Contoh: 1,2,3,...,10  -> klik "..." jadi 1,2,3,4,5,6,7,8,9,10,20,...
     function buildQuickJumpButtons(pageCount) {
         if (!quickJumpContainer) return;
         quickJumpContainer.innerHTML = '';
@@ -252,30 +254,122 @@ console.log('PDF URL:', url);
         const limit = isPremiumActive ? pageCount : Math.min(pageCount, maxPage);
         const safeLimit = Math.max(0, limit);
 
-        for (let i = 1; i <= safeLimit; i++) {
+        // fallback: kalau PDF belum siap
+        if (!safeLimit) return;
+
+        // state untuk extend saat klik "..."
+        // quickJumpExpandLevel: 0 (compact), 1 (extend berikutnya), 2, dst
+        if (typeof state.quickJumpExpandLevel !== 'number') state.quickJumpExpandLevel = 0;
+
+        const current = Number(state.pageNum) || 1;
+        const expandLevel = state.quickJumpExpandLevel;
+
+        const pages = new Set();
+        const add = (n) => {
+            n = Number(n);
+            if (!Number.isFinite(n)) return;
+            if (n < 1 || n > safeLimit) return;
+            pages.add(n);
+        };
+
+        // Selalu tampilkan 1..3
+        for (let i = 1; i <= Math.min(3, safeLimit); i++) add(i);
+
+        // Tampilkan halaman sekitar current (biar tetap membantu navigasi)
+        add(current - 1);
+        add(current);
+        add(current + 1);
+
+        // Milestone utama kelipatan 10
+        for (let p = 10; p <= safeLimit; p += 10) add(p);
+
+        // Logika extend:
+        // Pada expandLevel=0, tampilkan seolah range compact sampai milestone pertama yang relevan.
+        // Klik "..." menambahkan rentang halaman berikutnya secara bertahap (5 halaman per level, dibulatkan).
+        // Rentang awal yang akan diperluas dimulai dari milestone 10 (atau 4 jika safeLimit < 10).
+        const baseFrom = Math.min(10, safeLimit);
+
+        // tambahan per level: misal level 0 -> +0, level 1 -> +6, level 2 -> +12
+        const chunkSize = 6;
+        const extendUpTo = Math.min(safeLimit, baseFrom + (expandLevel * chunkSize));
+
+        // Tambahkan halaman bertahap dari baseFrom sampai extendUpTo, tapi stop sebelum milestone kelipatan 10 berikutnya terlalu berantakan.
+        // Tetap gunakan set agar ringkas.
+        for (let n = baseFrom; n <= extendUpTo; n++) {
+            add(n);
+        }
+
+        // Selalu tampilkan halaman terakhir
+        add(safeLimit);
+
+        const sortedPages = Array.from(pages).sort((a, b) => a - b);
+
+        const createQuickButton = (pageNumber) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'qj-btn';
-            btn.textContent = i;
-            btn.dataset.page = String(i);
+            btn.textContent = pageNumber;
+            btn.dataset.page = String(pageNumber);
             btn.addEventListener('click', async () => {
-                // Guard: jangan render halaman terkunci
-                if (!canRenderPage(i)) return;
-                state.pageNum = i;
-                setActiveQuickJump(i);
-                await renderPage(i);
-
-                // Scroll ke atas agar user langsung melihat halaman terpilih
+                if (!canRenderPage(pageNumber)) return;
+                state.pageNum = pageNumber;
+                setActiveQuickJump(pageNumber);
+                await renderPage(pageNumber);
                 viewer.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
+            return btn;
+        };
 
-            quickJumpContainer.appendChild(btn);
+        // Render per 15 halaman + tombol >> untuk menampilkan 15 berikutnya
+        // Ubah logic ringkas menjadi pagination chunk.
+        const chunkSize = 15;
+
+        // currentChunkStart disimpan di state
+        if (typeof state.currentChunkStart !== 'number') {
+            // mulai dari chunk yang mengandung halaman saat ini
+            const cur = Number(state.pageNum) || 1;
+            state.currentChunkStart = Math.max(1, cur - ((cur - 1) % chunkSize));
         }
 
-        // Jika premium aktif, buat juga halaman yang melebihi limit? tidak perlu karena limit = pageCount.
+        const chunkStart = Math.max(1, Math.min(safeLimit, state.currentChunkStart));
+        const chunkEnd = Math.min(safeLimit, chunkStart + chunkSize - 1);
+
+        // Reset list sebelum render
+        quickJumpContainer.innerHTML = '';
+
+        // Buat tombol halaman dalam chunk
+        for (let n = chunkStart; n <= chunkEnd; n++) {
+            // hanya render halaman dalam safeLimit
+            quickJumpContainer.appendChild(createQuickButton(n));
+        }
+
+        // tombol >> untuk chunk berikutnya
+        const hasNextChunk = chunkEnd < safeLimit;
+        const nextBtnEl = document.createElement('button');
+        nextBtnEl.type = 'button';
+        nextBtnEl.className = 'qj-btn';
+        nextBtnEl.textContent = '>>';
+        nextBtnEl.style.width = '56px';
+        nextBtnEl.style.fontSize = '12px';
+
+        if (!hasNextChunk) {
+            nextBtnEl.disabled = true;
+            nextBtnEl.style.opacity = '0.5';
+            nextBtnEl.style.cursor = 'default';
+        } else {
+            nextBtnEl.addEventListener('click', () => {
+                state.currentChunkStart = chunkStart + chunkSize;
+                buildQuickJumpButtons(pageCount);
+            });
+        }
+
+        quickJumpContainer.appendChild(nextBtnEl);
+
         setActiveQuickJump(state.pageNum);
         updateQuickJumpLockState();
     }
+
+
 
     (async function init() {
         try {
