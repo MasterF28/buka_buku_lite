@@ -282,9 +282,9 @@ console.log('PDF URL:', url);
             return btn;
         };
 
-        // Render per 15 halaman + tombol >> untuk menampilkan 15 berikutnya
+        // Render per 5 halaman + tombol >> untuk menampilkan 5 berikutnya
         // Ubah logic ringkas menjadi pagination chunk.
-        const chunkSize = 15;
+        const chunkSize = 5;
 
         // currentChunkStart disimpan di state
         if (typeof state.currentChunkStart !== 'number') {
