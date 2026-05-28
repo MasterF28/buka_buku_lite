@@ -345,7 +345,10 @@ console.log('PDF URL:', url);
         }
 
         setActiveQuickJump(state.pageNum);
+        // Pastikan tombol halaman di quick-jump tidak terkunci (berdasarkan membership)
+        updateQuickJumpLockState();
     }
+
 
 
 
