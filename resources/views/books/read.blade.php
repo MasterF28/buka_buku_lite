@@ -263,22 +263,6 @@ console.log('PDF URL:', url);
         const current = Number(state.pageNum) || 1;
         const expandLevel = state.quickJumpExpandLevel;
 
-        const pages = new Set();
-        const add = (n) => {
-            n = Number(n);
-            if (!Number.isFinite(n)) return;
-            if (n < 1 || n > safeLimit) return;
-            pages.add(n);
-        };
-
-        // Selalu tampilkan 1..3
-        for (let i = 1; i <= Math.min(3, safeLimit); i++) add(i);
-
-        // Tampilkan halaman sekitar current (biar tetap membantu navigasi)
-        add(current - 1);
-        add(current);
-        add(current + 1);
-
         // ===== Pagination 15 halaman =====
         // Button quick jump dibuat dalam bentuk chunk 15 halaman.
 
@@ -321,61 +305,46 @@ console.log('PDF URL:', url);
         // Reset list sebelum render
         quickJumpContainer.innerHTML = '';
 
-        // Buat tombol halaman dalam chunk
-        for (let n = chunkStart; n <= chunkEnd; n++) {
-            quickJumpContainer.appendChild(createQuickButton(n));
-        }
-
-        // tombol toolbar: << (chunk sebelumnya)
+        // tombol toolbar: << (chunk sebelumnya) - tampilkan di kiri paling kecil dari chunk
         const hasPrevChunk = chunkStart > 1;
-        const prevBtnEl = document.createElement('button');
-        prevBtnEl.type = 'button';
-        prevBtnEl.className = 'qj-btn';
-        prevBtnEl.textContent = '<<';
-        prevBtnEl.style.width = '56px';
-        prevBtnEl.style.fontSize = '12px';
-
-        if (!hasPrevChunk) {
-            prevBtnEl.disabled = true;
-            prevBtnEl.style.opacity = '0.5';
-            prevBtnEl.style.cursor = 'default';
-        } else {
+        if (hasPrevChunk) {
+            const prevBtnEl = document.createElement('button');
+            prevBtnEl.type = 'button';
+            prevBtnEl.className = 'qj-btn';
+            prevBtnEl.textContent = '<<';
+            prevBtnEl.style.width = '56px';
+            prevBtnEl.style.fontSize = '12px';
             prevBtnEl.addEventListener('click', () => {
                 state.currentChunkStart = Math.max(1, chunkStart - chunkSize);
                 buildQuickJumpButtons(pageCount);
             });
+            quickJumpContainer.appendChild(prevBtnEl);
         }
 
-        // render tombol halaman dalam chunk (<< dulu)
-        quickJumpContainer.appendChild(prevBtnEl);
+        // Buat tombol halaman dalam chunk
         for (let n = chunkStart; n <= chunkEnd; n++) {
             quickJumpContainer.appendChild(createQuickButton(n));
         }
 
         // tombol toolbar: >> (chunk berikutnya)
         const hasNextChunk = chunkEnd < safeLimit;
-        const nextBtnEl = document.createElement('button');
-        nextBtnEl.type = 'button';
-        nextBtnEl.className = 'qj-btn';
-        nextBtnEl.textContent = '>>';
-        nextBtnEl.style.width = '56px';
-        nextBtnEl.style.fontSize = '12px';
-
-        if (!hasNextChunk) {
-            nextBtnEl.disabled = true;
-            nextBtnEl.style.opacity = '0.5';
-            nextBtnEl.style.cursor = 'default';
-        } else {
+        if (hasNextChunk) {
+            const nextBtnEl = document.createElement('button');
+            nextBtnEl.type = 'button';
+            nextBtnEl.className = 'qj-btn';
+            nextBtnEl.textContent = '>>';
+            nextBtnEl.style.width = '56px';
+            nextBtnEl.style.fontSize = '12px';
             nextBtnEl.addEventListener('click', () => {
-                state.currentChunkStart = chunkStart + chunkSize;
+                // naikkan chunk walau user belum sampai halaman terakhir chunk
+                state.currentChunkStart = chunkEnd + 1;
+                state.currentChunkStart = Math.max(1, state.currentChunkStart);
                 buildQuickJumpButtons(pageCount);
             });
+            quickJumpContainer.appendChild(nextBtnEl);
         }
 
-        quickJumpContainer.appendChild(nextBtnEl);
-
         setActiveQuickJump(state.pageNum);
-        updateQuickJumpLockState();
     }
 
 
