@@ -280,29 +280,8 @@ console.log('PDF URL:', url);
         add(current);
         add(current + 1);
 
-        // Milestone utama kelipatan 10
-        for (let p = 10; p <= safeLimit; p += 10) add(p);
-
-        // Logika extend:
-        // Pada expandLevel=0, tampilkan seolah range compact sampai milestone pertama yang relevan.
-        // Klik "..." menambahkan rentang halaman berikutnya secara bertahap (5 halaman per level, dibulatkan).
-        // Rentang awal yang akan diperluas dimulai dari milestone 10 (atau 4 jika safeLimit < 10).
-        const baseFrom = Math.min(10, safeLimit);
-
-        // tambahan per level: misal level 0 -> +0, level 1 -> +6, level 2 -> +12
-        const chunkSize = 6;
-        const extendUpTo = Math.min(safeLimit, baseFrom + (expandLevel * chunkSize));
-
-        // Tambahkan halaman bertahap dari baseFrom sampai extendUpTo, tapi stop sebelum milestone kelipatan 10 berikutnya terlalu berantakan.
-        // Tetap gunakan set agar ringkas.
-        for (let n = baseFrom; n <= extendUpTo; n++) {
-            add(n);
-        }
-
-        // Selalu tampilkan halaman terakhir
-        add(safeLimit);
-
-        const sortedPages = Array.from(pages).sort((a, b) => a - b);
+        // ===== Pagination 15 halaman =====
+        // Button quick jump dibuat dalam bentuk chunk 15 halaman.
 
         const createQuickButton = (pageNumber) => {
             const btn = document.createElement('button');
@@ -329,6 +308,12 @@ console.log('PDF URL:', url);
             // mulai dari chunk yang mengandung halaman saat ini
             const cur = Number(state.pageNum) || 1;
             state.currentChunkStart = Math.max(1, cur - ((cur - 1) % chunkSize));
+        } else {
+            // kalau user sudah pindah halaman lewat tombol prev/next,
+            // pastikan chunk ikut bergeser agar tombol aktif sesuai.
+            const cur = Number(state.pageNum) || 1;
+            const expectedChunkStart = Math.max(1, cur - ((cur - 1) % chunkSize));
+            state.currentChunkStart = expectedChunkStart;
         }
 
         const chunkStart = Math.max(1, Math.min(safeLimit, state.currentChunkStart));
@@ -339,7 +324,6 @@ console.log('PDF URL:', url);
 
         // Buat tombol halaman dalam chunk
         for (let n = chunkStart; n <= chunkEnd; n++) {
-            // hanya render halaman dalam safeLimit
             quickJumpContainer.appendChild(createQuickButton(n));
         }
 
