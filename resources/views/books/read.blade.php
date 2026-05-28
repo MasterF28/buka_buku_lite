@@ -335,11 +335,21 @@ console.log('PDF URL:', url);
             nextBtnEl.textContent = '>>';
             nextBtnEl.style.width = '56px';
             nextBtnEl.style.fontSize = '12px';
-            nextBtnEl.addEventListener('click', () => {
-                // naikkan chunk walau user belum sampai halaman terakhir chunk
+            nextBtnEl.addEventListener('click', async () => {
+                // naikkan chunk tanpa menunggu next page di viewer
                 state.currentChunkStart = chunkEnd + 1;
                 state.currentChunkStart = Math.max(1, state.currentChunkStart);
+
+                const newChunkStart = state.currentChunkStart;
+                const newChunkEnd = Math.min(safeLimit, newChunkStart + chunkSize - 1);
+
+                // langsung lompat ke halaman pertama di chunk berikutnya
+                // agar user tidak merasa "stay" di halaman lama
+                const targetPage = newChunkStart;
+
                 buildQuickJumpButtons(pageCount);
+                await renderPage(targetPage);
+                viewer.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
             quickJumpContainer.appendChild(nextBtnEl);
         }
